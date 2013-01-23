@@ -1,22 +1,12 @@
 #!/usr/bin/ruby
 =begin
 
-This script turns downloadable tweets from twitter into a markdown 
-based text file timeline.
+This script turns downloadable tweets from twitter into a collection of
+text and json files.
 
-To run, change the 'screen_name' and 'TwitterFilename' below.
-
-I THINK that this is all working.  Check the previous gist version 
-for a more stable script with far fewer features.  Let me know in the
-comments if I'm doing anything terribly wrong here.  This is my pretty
-much my first (possibly) usefull script ever.
-
-The format is slightly different from the one used by Brett Terpstra.  
-I've included the @{{screen_name}} field so one text file can be used for 
-posts, mentions, favorites, and retweets.
-
-The archive folder structure requires the folder structure described in
-[Ian Beck](http://beckism.com/2012/07/archiving-tweets/) 
+To run, create a file named accounts.txt in this folder with a one-per-line
+list of user accounts; each will be archived into two folders, one under
+text and one under json.
 
 This is based on the work and ideas from:
 [Ian Beck](http://beckism.com/2012/07/archiving-tweets/) 2012
@@ -24,8 +14,7 @@ This is based on the work and ideas from:
 [Brett Terpstra](https://gist.github.com/3053353) 2012
 
 This was written by [Chris Kinniburgh](http://twitter.com/ckinniburgh)
-. . . but was heavily modified by Rainer Sigwald (rainer@sigwald.org)
-
+. . . but was heavily modified by [Rainer Sigwald](rainer@sigwald.org)
 
 =end
 
