@@ -21,6 +21,7 @@ This was written by [Chris Kinniburgh](http://twitter.com/ckinniburgh)
 require 'rubygems'
 require 'time'
 require 'twitter'
+require 'multi_json'
 
 $VERBOSE = nil
 $MAX_ATTEMPTS = 10
@@ -35,14 +36,12 @@ File.readlines('accounts.txt').each do |line|
   end
 end
 
-Twitter.configure do |config|
+$client = Twitter::REST::Client.new do |config|
   config.consumer_key = 
   config.consumer_secret = 
   config.oauth_token = 
   config.oauth_token_secret = 
 end
-
-
 
 def newest(screen_name)
   most_recent = 0;
@@ -54,7 +53,7 @@ def newest(screen_name)
 
   num_attempts = 0
   begin
-    currentTweets = Twitter.user_timeline(screen_name, :count => 200 , :since_id => most_recent)
+    currentTweets = $client.user_timeline(screen_name, :count => 200 , :since_id => most_recent)
   rescue Twitter::Error::TooManyRequests => error
     if num_attempts <= $MAX_ATTEMPTS
       # NOTE: Your process could go to sleep for up to 15 minutes but if you
@@ -65,13 +64,15 @@ def newest(screen_name)
     else
       raise
     end
+  if currentTweets == []
+    return
   end
 
   if currentTweets.last.id == most_recent
     puts "--"
     fetch_tweets screen_name, currentTweets, "since_id", most_recent
   else
-    currentTweets = Twitter.user_timeline(screen_name, :count => 200)
+    currentTweets = $client.user_timeline(screen_name, :count => 200)
     fetch_tweets screen_name, currentTweets, "since_id", most_recent
   end
 end
@@ -79,7 +80,7 @@ end
 def full_download(screen_name)
   num_attempts = 0
   begin
-    currentTweets = Twitter.user_timeline(screen_name, :count => 200)
+    currentTweets = $client.user_timeline(screen_name, :count => 200)
   rescue Twitter::Error::TooManyRequests => error
     if num_attempts <= $MAX_ATTEMPTS
       # NOTE: Your process could go to sleep for up to 15 minutes but if you
@@ -91,18 +92,18 @@ def full_download(screen_name)
       raise
     end
   end
-  
+
   fetch_tweets screen_name, currentTweets, "max_id", nil
 end
 
 def since_id(screen_name, since_id)
   unless since_id.nil?
-    currentTweets = Twitter.user_timeline(screen_name, :count => 200 , :since_id => since_id.to_i-1)
+    currentTweets = $client.user_timeline(screen_name, :count => 200 , :since_id => since_id.to_i-1)
     if currentTweets.last.id.to_i == since_id.to_i
-      currentTweets = Twitter.user_timeline(screen_name, :count => 200 , :since_id => since_id.to_i)
+      currentTweets = $client.user_timeline(screen_name, :count => 200 , :since_id => since_id.to_i)
       fetch_tweets screen_name, currentTweets, "since_id", since_id.to_i
     else
-      currentTweets = Twitter.user_timeline(screen_name, :count => 200)
+      currentTweets = $client.user_timeline(screen_name, :count => 200)
       fetch_tweets screen_name, currentTweets, "since_id", since_id.to_i
     end
   else
@@ -112,7 +113,7 @@ end
 
 def max_id(screen_name, max_id)
   unless max_id.nil?
-    currentTweets = Twitter.user_timeline(screen_name, :count => 200 , :max_id => max_id.to_i)
+    currentTweets = $client.user_timeline(screen_name, :count => 200 , :max_id => max_id.to_i)
     fetch_tweets screen_name, currentTweets, "max_id", nil
   else
     abort("Please specify an integer id. eg: twitterArchiver.rb -m 221080069651693568")
@@ -134,7 +135,8 @@ def fetch_tweets(screen_name, passedTweets, type, since_id)
       textfilename = "text/#{screen_name}/#{currentTweet['id']}.txt"
       
       f = File.new(jsonfilename, 'w')
-      f.print(MultiJson.dump(currentTweet, :pretty=>true))
+
+      f.print(MultiJson.dump(currentTweet.to_h, :pretty=>true))
       f.close
 
       f = File.new(textfilename, 'w')
@@ -155,19 +157,20 @@ def fetch_tweets(screen_name, passedTweets, type, since_id)
     num_attempts = 0
     begin
       num_attempts += 1
-      currentTweets = Twitter.user_timeline(screen_name, :count => 200, :max_id => currentTweets.last.id-1)
+      currentTweets = $client.user_timeline(screen_name, :count => 200, :max_id => currentTweets.last.id-1)
     rescue Twitter::Error::TooManyRequests => error
       if num_attempts <= $MAX_ATTEMPTS
         # NOTE: Your process could go to sleep for up to 15 minutes but if you
         # retry any sooner, it will almost certainly fail with the same exception.
         print "Rate limit exceeded, sleeping for #{error.rate_limit.reset_in} to let it reset.\n"
-        sleep error.rate_limit.reset_in
+        sleep error.rate_limit.reset_in + 1
         retry
       else
         raise
       end
     end
 
+    break puts "currentTweets empty" if currentTweets == []
     break puts "first=last" if currentTweets.first.id == previousTweets.last.id
     break puts "first=first" if currentTweets.first.id == previousTweets.first.id
     if since_id
@@ -181,6 +184,7 @@ end
 
 screen_names.each do |screen_name|
   print "Updating archive for @#{screen_name}.\n"
+
   if !File.directory?("json")
     Dir.mkdir "json"
     Dir.mkdir "text"
