@@ -19,14 +19,6 @@ Install the required Ruby libraries by running:
 gem install --user-install twitter multi_json
 ```
 
-Ensure that everything has been installed successfully by trying to run the script. It should fail with a message indicating
-
-```
-No such file or directory - accounts.txt (Errno::ENOENT)
-```
-
-That's ok—we haven't created that file yet.
-
 ## API Keys
 
 Access to the Twitter API requires access tokens for both the "Twitter App" and your user. To get them:
