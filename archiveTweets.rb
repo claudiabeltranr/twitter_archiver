@@ -131,7 +131,7 @@ def fetch_tweets(screen_name, passedTweets, type, since_id)
   while tweetCount < 3200
     currentTweets.each do |currentTweet|
       if type == "since_id"
-        break breakTweet = currentTweet if currentTweet.id == since_id
+        break breakTweet = currentTweet.id if currentTweet.id == since_id
       end
       
       jsonfilename = "json/#{screen_name}/#{currentTweet['id']}.json"
@@ -151,7 +151,7 @@ def fetch_tweets(screen_name, passedTweets, type, since_id)
       File.utime(currentTweet['created_at'], currentTweet['created_at'], textfilename)
     end
     if type == "since_id"
-      break if breakTweet.id == since_id
+      break if breakTweet == since_id
     end
     tweetCount = tweetCount + currentTweets.size
     print "Number of Tweets Archived: " + tweetCount.to_s + "\n"
