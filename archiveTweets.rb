@@ -64,6 +64,7 @@ def newest(screen_name)
     else
       raise
     end
+  end
   if currentTweets == []
     return
   end
@@ -119,7 +120,6 @@ def max_id(screen_name, max_id)
     abort("Please specify an integer id. eg: twitterArchiver.rb -m 221080069651693568")
   end
 end
-
 
 def fetch_tweets(screen_name, passedTweets, type, since_id)
   tweetCount = 0
