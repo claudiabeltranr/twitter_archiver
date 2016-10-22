@@ -44,11 +44,14 @@ $client = Twitter::REST::Client.new do |config|
 end
 
 def newest(screen_name)
-  most_recent = 0;
-
   most_recent = Dir.entries("json/#{screen_name}").map { |filename|
       filename.sub('.json', '').to_i
     }.max
+
+  if most_recent == 0
+    most_recent = 1
+  end
+
   print "Finding tweets for @#{screen_name} since last downloaded tweet (#{most_recent}).\n"
 
   num_attempts = 0
