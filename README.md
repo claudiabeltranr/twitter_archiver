@@ -7,7 +7,7 @@ Started as a fork of [a gist](https://gist.github.com/3063070) I found through [
 
 # Using the script
 
-First download [`archiveTweets.rb`](https://raw.githubusercontent.com/rainersigwald/twitter_archiver/master/archiveTweets.rb). Put it in a directory (folder) by itself and open it in a text editor.
+First download [`archiveTweets.rb`](https://github.com/rainersigwald/twitter_archiver/blob/master/archiveTweets.rb) by clicking on its link, right-clicking on the "Raw" button, and selecting "Download linked file as". Put it in a directory (folder) by itself and open it in a text editor.
 
 ## Ruby environment (OS X)
 
